@@ -51,10 +51,8 @@ const Profile = () => {
       .single();
 
     if (error) {
-      console.error('Profile fetch error:', error);
       // If profile doesn't exist, create it
       if (error.code === 'PGRST116') {
-        console.log('Profile not found, creating new profile...');
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
@@ -66,7 +64,6 @@ const Profile = () => {
           .single();
 
         if (createError) {
-          console.error('Profile creation error:', createError);
           toast.error('Greška pri kreiranju profila');
           setLoading(false);
           return;

@@ -58,7 +58,7 @@ const NotificationSettings = () => {
         setPreferences(data.notification_preferences as NotificationPreferences);
       }
     } catch (error) {
-      console.error('Error fetching preferences:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ const NotificationSettings = () => {
 
       toast.success('Postavke obavijesti ažurirane');
     } catch (error) {
-      console.error('Error updating preferences:', error);
+      
       toast.error('Greška pri ažuriranju postavki');
       // Revert on error
       setPreferences(preferences);

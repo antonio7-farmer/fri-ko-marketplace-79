@@ -168,7 +168,7 @@ const Notifications = () => {
 
       setNotifications(allNotifications);
     } catch (error: any) {
-      console.error('Error fetching notifications:', error);
+      
       toast.error('Greška pri učitavanju obavijesti');
     } finally {
       setLoading(false);

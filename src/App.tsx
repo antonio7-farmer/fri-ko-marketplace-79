@@ -78,8 +78,7 @@ const AppRoutes = () => {
       if (session?.user) {
         await pushNotificationService.initialize();
       }
-    }).catch((error) => {
-      console.error('Failed to get session:', error);
+    }).catch(() => {
       setLoading(false);
     });
 

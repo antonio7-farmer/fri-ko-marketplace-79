@@ -207,7 +207,7 @@ const ProductDetails = () => {
       navigate(`/chat/${seller.id}`);
 
     } catch (error: any) {
-      console.error('Reservation error:', error);
+      
       toast.error('Greška pri rezervaciji: ' + error.message);
     } finally {
       setSubmittingReservation(false);

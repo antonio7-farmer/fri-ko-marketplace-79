@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -20,8 +20,8 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    // Error is displayed in UI when in dev mode
   }
 
   render() {

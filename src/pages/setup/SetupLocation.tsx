@@ -87,7 +87,6 @@ const SetupLocation = () => {
           setAddress(data.display_name);
         }
       } catch (error) {
-        console.error('Failed to fetch address:', error);
       }
     };
 
@@ -115,7 +114,6 @@ const SetupLocation = () => {
         .single();
 
       if (profileError || !profile) {
-        console.error('Profile not found:', profileError);
         toast.error('Profil nije pronađen. Molimo pokušajte ponovno registrirati.');
         setLoading(false);
         return;
@@ -131,7 +129,6 @@ const SetupLocation = () => {
         .eq('id', user.id);
 
       if (error) {
-        console.error('Database error:', error);
         toast.error('Greška pri spremanju lokacije: ' + error.message);
         setLoading(false);
         return;
@@ -141,7 +138,6 @@ const SetupLocation = () => {
       navigate('/setup/profile');
 
     } catch (error) {
-      console.error('Unexpected error:', error);
       toast.error('Došlo je do neočekivane greške');
       setLoading(false);
     }

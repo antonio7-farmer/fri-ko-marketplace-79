@@ -118,7 +118,7 @@ const Reservations = () => {
       if (error) throw error;
       setReservations(data || []);
     } catch (error: any) {
-      console.error('Error fetching reservations:', error);
+      
       toast.error('Greška pri učitavanju rezervacija');
     } finally {
       setLoading(false);
@@ -142,7 +142,7 @@ const Reservations = () => {
 
       fetchReservations();
     } catch (error: any) {
-      console.error('Error updating reservation:', error);
+      
       toast.error('Greška pri ažuriranju rezervacije');
     }
   };

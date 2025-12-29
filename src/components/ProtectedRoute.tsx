@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
       }
@@ -22,8 +22,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
-    }).catch((error) => {
-      console.error('Failed to get session:', error);
+    }).catch(() => {
       setLoading(false);
     });
 

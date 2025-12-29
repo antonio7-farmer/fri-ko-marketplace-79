@@ -40,3 +40,13 @@ firebase-service-account.json
 # Service account keys
 serviceAccountKey.json
 service-account-key.json
+
+# Developer tools
+*.exe
+GoogleCloudSDKInstaller.exe
+
+# Legacy SQL files (use migrations instead)
+setup-database.sql
+add-reservations-table.sql
+fix-storage-nested-folders.sql
+update_profiles_schema.sql

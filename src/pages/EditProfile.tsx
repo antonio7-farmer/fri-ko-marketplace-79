@@ -62,7 +62,6 @@ const LocationPicker = ({ position, setPosition, setAddress }: any) => {
         const data = await response.json();
         setAddress(data.display_name || 'Odabrana lokacija');
       } catch (error) {
-        console.error('Error fetching address:', error);
       }
     },
   });
@@ -188,7 +187,6 @@ const EditProfile = () => {
 
     } catch (error: any) {
       toast.error('Greška pri učitavanju profila');
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -250,7 +248,6 @@ const EditProfile = () => {
         const compressed = await compressImage(file);
         newFiles.push(compressed);
       } catch (error) {
-        console.error('Compression failed:', error);
         newFiles.push(file); // Fallback
       }
 
@@ -278,10 +275,8 @@ const EditProfile = () => {
         .remove([filePath]);
 
       if (error) {
-        console.error('Error deleting farm picture:', error);
       }
     } catch (error) {
-      console.error('Error deleting farm picture:', error);
     }
   };
 

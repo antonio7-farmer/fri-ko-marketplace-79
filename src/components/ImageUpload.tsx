@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, X, Camera } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImageUploadProps {
@@ -66,8 +66,7 @@ const ImageUpload = ({
             const file = new File([blob], fileName, { type: blob.type });
 
             processFile(file);
-        } catch (err) {
-            console.error('Image fetch error:', err);
+        } catch {
             toast.error('Ne mogu preuzeti sliku s ove web stranice. Molimo spremite je na uređaj pa povucite datoteku.', {
                 duration: 5000
             });

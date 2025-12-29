@@ -161,7 +161,6 @@ const ChatThread = () => {
       .insert(messageData);
 
     if (error) {
-      console.error('Message send error:', error);
       toast.error('Greška pri slanju poruke: ' + error.message);
     } else {
       setNewMessage('');

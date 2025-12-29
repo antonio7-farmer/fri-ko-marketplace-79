@@ -21,7 +21,6 @@ export class PushNotificationService {
 
     // Only run on native platforms
     if (!Capacitor.isNativePlatform()) {
-      console.log('Push notifications only available on native platforms');
       return;
     }
 
@@ -37,25 +36,20 @@ export class PushNotificationService {
         this.setupListeners();
 
         this.isInitialized = true;
-        console.log('Push notifications initialized successfully');
-      } else {
-        console.log('Push notification permission denied');
       }
     } catch (error) {
-      console.error('Error initializing push notifications:', error);
+      // Silently fail - push notifications are optional
     }
   }
 
   private setupListeners() {
     // Handle successful registration
     PushNotifications.addListener('registration', async (token: Token) => {
-      console.log('Push registration success, token:', token.value);
       await this.saveFCMToken(token.value);
     });
 
     // Handle registration errors
-    PushNotifications.addListener('registrationError', (error: any) => {
-      console.error('Push registration error:', error);
+    PushNotifications.addListener('registrationError', () => {
       toast.error('Greška pri registraciji notifikacija');
     });
 
@@ -63,8 +57,6 @@ export class PushNotificationService {
     PushNotifications.addListener(
       'pushNotificationReceived',
       (notification: PushNotificationSchema) => {
-        console.log('Push notification received:', notification);
-
         // Show toast when app is in foreground
         toast.info(notification.title || 'Nova obavijest', {
           description: notification.body,
@@ -77,8 +69,6 @@ export class PushNotificationService {
     PushNotifications.addListener(
       'pushNotificationActionPerformed',
       (notification: ActionPerformed) => {
-        console.log('Push notification action performed:', notification);
-
         // You can handle navigation here based on notification data
         const data = notification.notification.data;
         if (data?.route) {
@@ -94,7 +84,6 @@ export class PushNotificationService {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        console.log('No user logged in, skipping token save');
         return;
       }
 
@@ -115,13 +104,10 @@ export class PushNotificationService {
         });
 
       if (error) {
-        console.error('Error saving FCM token:', error);
         throw error;
       }
-
-      console.log('FCM token saved successfully');
     } catch (error) {
-      console.error('Failed to save FCM token:', error);
+      // Silently fail
     }
   }
 
@@ -152,10 +138,8 @@ export class PushNotificationService {
         .eq('device_id', deviceId);
 
       if (error) throw error;
-
-      console.log('FCM token removed successfully');
     } catch (error) {
-      console.error('Failed to remove FCM token:', error);
+      // Silently fail
     }
   }
 

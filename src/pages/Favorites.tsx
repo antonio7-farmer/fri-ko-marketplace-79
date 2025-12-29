@@ -68,8 +68,7 @@ const Favorites = () => {
 
       if (error) throw error;
       setFavorites(data || []);
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
+    } catch {
       toast.error('Greška pri učitavanju favorita');
     } finally {
       setLoading(false);
@@ -90,8 +89,7 @@ const Favorites = () => {
 
       setFavorites(favorites.filter(f => f.id !== favoriteId));
       toast.success(`${sellerName} uklonjen iz favorita`);
-    } catch (error) {
-      console.error('Error removing favorite:', error);
+    } catch {
       toast.error('Greška pri uklanjanju favorita');
     } finally {
       setRemovingId(null);
