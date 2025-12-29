@@ -30,3 +30,13 @@ dist-ssr
 supabase/.branches/
 supabase/.temp/
 supabase_linux_amd64.tar.gz
+
+# Firebase sensitive files
+google-services.json
+android/app/google-services.json
+firebase-service-account.json
+*-firebase-adminsdk-*.json
+
+# Service account keys
+serviceAccountKey.json
+service-account-key.json

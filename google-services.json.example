@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "66764021346",
-    "project_id": "frisko-ebfac",
-    "storage_bucket": "frisko-ebfac.firebasestorage.app"
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "your-firebase-project-id",
+    "storage_bucket": "your-firebase-project-id.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:66764021346:android:31ab5b7590985da1b67b3b",
+        "mobilesdk_app_id": "YOUR_MOBILE_SDK_APP_ID",
         "android_client_info": {
-          "package_name": "com.frisko.app"
+          "package_name": "hr.frisko.marketplace"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDQMUhQk7Uj4BfTQchdSiFko1kmEsGbbfQ"
+          "current_key": "YOUR_API_KEY"
         }
       ],
       "services": {
