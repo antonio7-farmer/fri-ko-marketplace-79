@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(gradlew.bat assembleDebug:*)",
+      "Bash(.gradlew.bat assembleDebug:*)",
+      "Bash(cmd /c gradlew.bat assembleDebug)",
+      "Bash(bash gradlew:*)",
+      "Bash(where:*)",
+      "Bash(export JAVA_HOME:*)",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
+      "Bash(java -version:*)",
+      "Bash(cp:*)"
+    ]
+  }
+}
