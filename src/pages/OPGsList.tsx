@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import { PageLayout } from '@/components/layout';
+import { DEFAULT_LOCATION } from '@/lib/constants';
+import { calculateDistance, parseCoordinates } from '@/lib/geolocation';
 
 interface OPG {
   id: string;
@@ -19,19 +21,6 @@ interface OPG {
   location_lng: number | null;
   bio: string | null;
 }
-
-// Helper function to calculate distance between two coordinates (Haversine formula)
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 const OPGsList = () => {
   const navigate = useNavigate();
@@ -56,7 +45,7 @@ const OPGsList = () => {
       const currentUser = await checkAuth();
 
       // Set default location immediately
-      setUserLocation({ lat: 45.815, lng: 15.9819 });
+      setUserLocation(DEFAULT_LOCATION);
 
       // Start location and OPGs fetch in parallel
       const locationPromise = getUserLocationAsync(currentUser);
@@ -129,11 +118,9 @@ const OPGsList = () => {
           .eq('id', currentUser.id)
           .single();
 
-        if (profile?.location_lat && profile?.location_lng) {
-          return {
-            lat: Number(profile.location_lat),
-            lng: Number(profile.location_lng)
-          };
+        const coords = parseCoordinates(profile?.location_lat, profile?.location_lng);
+        if (coords) {
+          return coords;
         }
       }
 
@@ -209,15 +196,15 @@ const OPGsList = () => {
   const opgsWithDistance = useMemo(() => {
     if (!userLocation) return allOPGs;
 
-    return allOPGs.map(opg => ({
-      ...opg,
-      distance: calculateDistance(
-        userLocation.lat,
-        userLocation.lng,
-        Number(opg.location_lat),
-        Number(opg.location_lng)
-      )
-    }));
+    return allOPGs.map(opg => {
+      const coords = parseCoordinates(opg.location_lat, opg.location_lng);
+      return {
+        ...opg,
+        distance: coords
+          ? calculateDistance(userLocation.lat, userLocation.lng, coords.lat, coords.lng)
+          : Infinity
+      };
+    });
   }, [allOPGs, userLocation]); // Only recalc when location or OPGs change
 
   // Filter pre-calculated distances
@@ -527,16 +514,19 @@ const OPGsList = () => {
                     </div>
                   )}
 
-                  {userLocation && opg.location_lat && opg.location_lng && (
-                    <p className="text-xs text-[#22C55E] font-medium">
-                      {calculateDistance(
-                        userLocation.lat,
-                        userLocation.lng,
-                        Number(opg.location_lat),
-                        Number(opg.location_lng)
-                      ).toFixed(1)} km
-                    </p>
-                  )}
+                  {userLocation && opg.location_lat && opg.location_lng && (() => {
+                    const coords = parseCoordinates(opg.location_lat, opg.location_lng);
+                    return coords && (
+                      <p className="text-xs text-[#22C55E] font-medium">
+                        {calculateDistance(
+                          userLocation.lat,
+                          userLocation.lng,
+                          coords.lat,
+                          coords.lng
+                        ).toFixed(1)} km
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
             ))

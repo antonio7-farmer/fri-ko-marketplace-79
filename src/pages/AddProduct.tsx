@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Check } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
+import { getErrorMessage } from '@/lib/errors';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -95,8 +96,8 @@ const AddProduct = () => {
       setLoading(false);
       navigate('/dashboard');
 
-    } catch (err: any) {
-      setError(err.message || 'Greška pri dodavanju proizvoda');
+    } catch (err) {
+      setError(getErrorMessage(err) || 'Greška pri dodavanju proizvoda');
       setLoading(false);
     }
   };

@@ -25,6 +25,24 @@ interface ConversationData {
   unread_count: number;
 }
 
+interface UserConversationRow {
+  partner_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  verified: boolean | null;
+  last_message: {
+    id: string;
+    content: string;
+    created_at: string;
+    sender_id: string;
+    product_id: string | null;
+    conversation_id: string;
+    read: boolean;
+    receiver_id: string;
+  } | null;
+  unread_count: number;
+}
+
 const Conversations = () => {
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<ConversationData[]>([]);
@@ -64,23 +82,29 @@ const Conversations = () => {
 
   const fetchConversations = async (userId: string) => {
     // Use optimized database function - reduces 31 queries to 1
-    const { data: conversations, error } = await supabase
+    const { data, error } = await supabase
       .rpc('get_user_conversations', { user_id: userId });
 
     if (error) {
       console.error('Error fetching conversations:', error);
+      setConversations([]);
       setLoading(false);
       return;
     }
 
+    const conversations = data as UserConversationRow[] | null;
+
     if (!conversations || conversations.length === 0) {
+      setConversations([]);
       setLoading(false);
       return;
     }
 
     // Transform data to match expected format
     const formattedConversations = conversations
-      .filter(conv => conv.last_message !== null)
+      .filter((conv): conv is UserConversationRow & { last_message: NonNullable<UserConversationRow['last_message']> } =>
+        conv.last_message !== null
+      )
       .map(conv => ({
         id: conv.partner_id,
         other_user: {

@@ -49,7 +49,13 @@ const DAYS = [
   { value: 'sunday', label: 'Nedjelja' },
 ];
 
-const LocationPicker = ({ position, setPosition, setAddress }: any) => {
+interface LocationPickerProps {
+  position: [number, number] | null;
+  setPosition: (position: [number, number]) => void;
+  setAddress: (address: string) => void;
+}
+
+const LocationPicker = ({ position, setPosition, setAddress }: LocationPickerProps) => {
   const map = useMapEvents({
     click: async (e) => {
       const { lat, lng } = e.latlng;

@@ -5,16 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import { PageLayout } from '@/components/layout';
+import { CATEGORIES, DEFAULT_LOCATION } from '@/lib/constants';
+import { calculateDistance, parseCoordinates } from '@/lib/geolocation';
 
-const categories = [
-  { value: 'all', label: 'Sve' },
-  { value: 'voce', label: 'Voće' },
-  { value: 'povrce', label: 'Povrće' },
-  { value: 'meso', label: 'Meso' },
-  { value: 'jaja', label: 'Jaja' },
-  { value: 'mlijecni', label: 'Mliječni' },
-  { value: 'ostalo', label: 'Ostalo' }
-];
+const categories = CATEGORIES;
 
 interface Product {
   id: string;
@@ -52,19 +46,6 @@ interface OPG {
   location_lng: number | null;
   products: Product[];
 }
-
-// Helper function to calculate distance between two coordinates (Haversine formula)
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 // Helper function to get category icon
 const getCategoryIcon = (category: string) => {
@@ -112,7 +93,7 @@ const Home = () => {
       const currentUser = await checkAuth();
 
       // Set default location immediately
-      setUserLocation({ lat: 45.815, lng: 15.9819 });
+      setUserLocation(DEFAULT_LOCATION);
 
       // Start location and feed in parallel
       const locationPromise = getUserLocationAsync(currentUser);
@@ -207,11 +188,9 @@ const Home = () => {
           .eq('id', currentUser.id)
           .single();
 
-        if (profile?.location_lat && profile?.location_lng) {
-          return {
-            lat: Number(profile.location_lat),
-            lng: Number(profile.location_lng)
-          };
+        const coords = parseCoordinates(profile?.location_lat, profile?.location_lng);
+        if (coords) {
+          return coords;
         }
       }
 

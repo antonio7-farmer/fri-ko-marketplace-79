@@ -4,6 +4,7 @@ import { ArrowLeft, Package, Check, X, Clock, User, MessageCircle } from 'lucide
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PageLayout } from '@/components/layout';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface Reservation {
   id: string;
@@ -35,7 +36,7 @@ interface Reservation {
 
 const Reservations = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);

@@ -14,7 +14,8 @@
       "Bash(java -version:*)",
       "Bash(cp:*)",
       "Bash(./gradlew:*)",
-      "Bash(dir \"C:\\\\Program Files\\\\Eclipse Adoptium\")"
+      "Bash(dir \"C:\\\\Program Files\\\\Eclipse Adoptium\")",
+      "Bash(cat:*)"
     ]
   }
 }

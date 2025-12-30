@@ -14,14 +14,11 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PageLayout } from '@/components/layout';
+import { CATEGORIES } from '@/lib/constants';
+import { initializeLeafletIcons } from '@/lib/leaflet';
 
-// Fix Leaflet default marker icon
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+// Initialize Leaflet icons
+initializeLeafletIcons();
 
 // Custom green marker
 const greenIcon = new L.Icon({
@@ -62,15 +59,7 @@ interface UserLocation {
   lng: number;
 }
 
-const categories = [
-  { value: 'all', label: 'Sve' },
-  { value: 'voce', label: 'Voće' },
-  { value: 'povrce', label: 'Povrće' },
-  { value: 'meso', label: 'Meso' },
-  { value: 'jaja', label: 'Jaja' },
-  { value: 'mlijecni', label: 'Mliječni' },
-  { value: 'ostalo', label: 'Ostalo' }
-];
+const categories = CATEGORIES;
 
 // Map controller component - handles flying to selected OPG
 function MapController({ selectedOPG }: { selectedOPG: OPGLocation | null }) {

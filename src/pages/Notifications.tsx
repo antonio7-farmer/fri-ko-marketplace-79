@@ -21,6 +21,40 @@ interface Notification {
   };
 }
 
+interface ReservationData {
+  id: string;
+  buyer_id: string;
+  seller_id: string;
+  product_id: string;
+  quantity: number;
+  unit: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  created_at: string;
+  updated_at: string;
+  buyer: {
+    display_name: string;
+  };
+  seller: {
+    display_name: string;
+  };
+  product: {
+    title: string;
+  };
+}
+
+interface MessageData {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  read: boolean;
+  created_at: string;
+  sender: {
+    display_name: string;
+    avatar_url: string | null;
+  };
+}
+
 const Notifications = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -78,7 +112,7 @@ const Notifications = () => {
         .limit(20);
 
       if (reservations) {
-        reservations.forEach((res: any) => {
+        reservations.forEach((res: ReservationData) => {
           allNotifications.push({
             id: `reservation-${res.id}`,
             type: res.status === 'pending' ? 'reservation' : 'reservation_update',
@@ -112,7 +146,7 @@ const Notifications = () => {
         .limit(20);
 
       if (messages) {
-        messages.forEach((msg: any) => {
+        messages.forEach((msg: MessageData) => {
           allNotifications.push({
             id: `message-${msg.id}`,
             type: 'message',
@@ -142,7 +176,7 @@ const Notifications = () => {
         .limit(10);
 
       if (buyerReservations) {
-        buyerReservations.forEach((res: any) => {
+        buyerReservations.forEach((res: ReservationData) => {
           allNotifications.push({
             id: `buyer-reservation-${res.id}`,
             type: 'reservation_update',
