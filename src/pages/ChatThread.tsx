@@ -225,14 +225,14 @@ const ChatThread = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-[#E8F5E9] flex items-center justify-center">
+      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#E8F5E9]">
+    <div className="min-h-screen flex flex-col bg-[#E8F5E9]">
       {/* Header */}
       <div className="bg-white border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1">

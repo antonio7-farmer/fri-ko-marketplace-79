@@ -12,7 +12,9 @@
       "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
       "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
       "Bash(java -version:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(./gradlew:*)",
+      "Bash(dir \"C:\\\\Program Files\\\\Eclipse Adoptium\")"
     ]
   }
 }
