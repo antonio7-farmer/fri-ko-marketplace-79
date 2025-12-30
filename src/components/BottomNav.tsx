@@ -4,6 +4,7 @@ import { Home, Map as MapIcon, MessageCircle, User, Package } from 'lucide-react
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { storeRedirectPath } from '@/lib/navigation';
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ const BottomNav = () => {
   const handleProtectedNav = (path: string) => {
     if (!user) {
       toast.error('Prijavite se za pristup');
-      localStorage.setItem('redirectAfterLogin', path);
+      storeRedirectPath(path);
       navigate('/login');
       return;
     }

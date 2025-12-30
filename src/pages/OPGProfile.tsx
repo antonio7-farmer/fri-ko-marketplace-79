@@ -8,6 +8,7 @@ import { PageLayout } from '@/components/layout';
 import ProductsGrid from '@/components/ProductsGrid';
 import AboutSection from '@/components/AboutSection';
 import ReviewsSection from '@/components/ReviewsSection';
+import { storeRedirectPath } from '@/lib/navigation';
 
 interface Profile {
   id: string;
@@ -105,7 +106,7 @@ const OPGProfile = () => {
   const toggleFavorite = async () => {
     if (!user) {
       toast.error('Prijavite se za dodavanje favorita');
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      storeRedirectPath(window.location.pathname);
       navigate('/login');
       return;
     }
@@ -130,7 +131,7 @@ const OPGProfile = () => {
   const handleFollow = () => {
     if (!user) {
       toast.error('Prijavite se za praćenje');
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      storeRedirectPath(window.location.pathname);
       navigate('/login');
       return;
     }
@@ -142,7 +143,7 @@ const OPGProfile = () => {
   const handleContact = () => {
     if (!user) {
       toast.error('Prijavite se za slanje poruka');
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      storeRedirectPath(window.location.pathname);
       navigate('/login');
       return;
     }

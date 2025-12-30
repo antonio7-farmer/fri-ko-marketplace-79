@@ -7,6 +7,7 @@ import { User } from '@supabase/supabase-js';
 import { PageLayout } from '@/components/layout';
 import { CATEGORIES, DEFAULT_LOCATION } from '@/lib/constants';
 import { calculateDistance, parseCoordinates } from '@/lib/geolocation';
+import { storeRedirectPath } from '@/lib/navigation';
 
 const categories = CATEGORIES;
 
@@ -82,6 +83,7 @@ const Home = () => {
   const [allOPGs, setAllOPGs] = useState<OPG[]>([]);
   const [nearbyProducts, setNearbyProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [page, setPage] = useState(0);
@@ -200,6 +202,10 @@ const Home = () => {
   };
 
   const fetchData = async (pageNum = 0, append = false) => {
+    // Prevent duplicate requests
+    if (isFetching) return;
+
+    setIsFetching(true);
     setLoading(true);
 
     // Fetch paginated OPGs (farmers and sellers) with location data
@@ -262,6 +268,7 @@ const Home = () => {
     setNearbyProducts(append ? [...nearbyProducts, ...((products as Product[]) || [])] : ((products as Product[]) || []));
     setHasMore((count ?? 0) > (pageNum + 1) * ITEMS_PER_PAGE);
     setLoading(false);
+    setIsFetching(false);
   };
 
   const fetchFavorites = async (userId: string) => {
@@ -303,7 +310,7 @@ const Home = () => {
   const toggleFavorite = useCallback(async (sellerId: string) => {
     if (!user) {
       toast.error('Prijavite se za dodavanje favorita');
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      storeRedirectPath(window.location.pathname);
       navigate('/login');
       return;
     }
@@ -326,7 +333,7 @@ const Home = () => {
   }, [user, favorites, navigate]);
 
   const handleScroll = useCallback(() => {
-    if (loading || !hasMore) return;
+    if (loading || isFetching || !hasMore) return;
 
     const scrollTop = window.scrollY;
     const scrollHeight = document.documentElement.scrollHeight;
@@ -337,7 +344,7 @@ const Home = () => {
       setPage(nextPage);
       fetchData(nextPage, true);
     }
-  }, [loading, hasMore, page]);
+  }, [loading, isFetching, hasMore, page]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);

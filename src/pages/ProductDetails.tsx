@@ -18,6 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
+import { storeRedirectPath } from '@/lib/navigation';
 import { PageLayout } from '@/components/layout';
 
 interface Product {
@@ -121,7 +122,7 @@ const ProductDetails = () => {
   const handleReservation = async () => {
     if (!user) {
       toast.error('Prijavite se za rezervaciju');
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      storeRedirectPath(window.location.pathname);
       navigate('/login');
       return;
     }

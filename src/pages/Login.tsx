@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { consumeRedirectPath } from '@/lib/navigation';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,12 +27,11 @@ const Login = () => {
       setError(signInError.message);
       setLoading(false);
     } else {
-      // Check for redirect path
-      const redirectPath = localStorage.getItem('redirectAfterLogin');
-      localStorage.removeItem('redirectAfterLogin');
-      
+      // Get safe redirect path (validates to prevent open redirect)
+      const redirectPath = consumeRedirectPath('/');
+
       toast.success('Dobrodošli!');
-      navigate(redirectPath || '/');
+      navigate(redirectPath);
     }
   };
 
