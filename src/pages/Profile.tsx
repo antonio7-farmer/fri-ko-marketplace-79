@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 import {
   Settings,
   Check,
@@ -123,28 +123,28 @@ const Profile = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#22C55E] to-[#16A34A] text-white px-6 pt-12 pb-20">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Profil</h1>
-          <button
-            onClick={() => navigate('/profile/edit')}
-            className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
-          >
-            <Settings size={24} />
-          </button>
-        </div>
-      </div>
+    <PageLayout
+      variant="custom-header"
+      loading={loading}
+      header={{
+        show: true,
+        children: (
+          <div className="bg-gradient-to-br from-[#22C55E] to-[#16A34A] text-white px-6 pt-6 pb-16">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">Profil</h1>
+              <button
+                onClick={() => navigate('/profile/edit')}
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+              >
+                <Settings size={24} />
+              </button>
+            </div>
+          </div>
+        )
+      }}
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+    >
 
       {/* Cover Photo for OPGs */}
       {['seller', 'farmer'].includes(profile?.role) && profile?.cover_url && (
@@ -164,7 +164,7 @@ const Profile = () => {
       )}
 
       {/* Profile Card */}
-      <div className={`relative ${['seller', 'farmer'].includes(profile?.role) && profile?.cover_url ? '-mt-8' : '-mt-16'} mx-6`}>
+      <div className={`relative ${['seller', 'farmer'].includes(profile?.role) && profile?.cover_url ? '-mt-8' : '-mt-12'} mx-6`}>
         <div className="bg-white rounded-2xl shadow-xl p-6">
           {/* Avatar */}
           <div className="flex items-center gap-4 mb-6">
@@ -613,9 +613,7 @@ const Profile = () => {
           <p className="text-sm text-[#6B7280]">Friško.hr v1.0.0</p>
         </div>
       </div>
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

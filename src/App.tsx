@@ -3,12 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useAndroidBackButton } from "@/hooks/useAndroidBackButton";
 import { pushNotificationService } from "@/services/pushNotifications";
+
+// Eager load auth pages
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -16,28 +18,30 @@ import RegisterBuyer from "./pages/RegisterBuyer";
 import RegisterSeller from "./pages/RegisterSeller";
 import SetupLocation from "./pages/setup/SetupLocation";
 import SetupProfile from "./pages/setup/SetupProfile";
-import Home from "./pages/Home";
-import OPGsList from "./pages/OPGsList";
-import OPGProfile from "./pages/OPGProfile";
-import ProductDetails from "./pages/ProductDetails";
-import MapView from "./pages/MapView";
-import Conversations from "./pages/Conversations";
-import ChatThread from "./pages/ChatThread";
-import Dashboard from "./pages/Dashboard";
-import AddProduct from "./pages/AddProduct";
-import EditProduct from "./pages/EditProduct";
-import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
-import ChangePassword from "./pages/ChangePassword";
-import Notifications from "./pages/Notifications";
-import Reservations from "./pages/Reservations";
-import Favorites from "./pages/Favorites";
-import About from "./pages/About";
-import Help from "./pages/Help";
-import NotificationSettings from "./pages/NotificationSettings";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// Lazy load main app pages
+const Home = lazy(() => import("./pages/Home"));
+const OPGsList = lazy(() => import("./pages/OPGsList"));
+const OPGProfile = lazy(() => import("./pages/OPGProfile"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+const MapView = lazy(() => import("./pages/MapView"));
+const Conversations = lazy(() => import("./pages/Conversations"));
+const ChatThread = lazy(() => import("./pages/ChatThread"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AddProduct = lazy(() => import("./pages/AddProduct"));
+const EditProduct = lazy(() => import("./pages/EditProduct"));
+const Profile = lazy(() => import("./pages/Profile"));
+const EditProfile = lazy(() => import("./pages/EditProfile"));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Reservations = lazy(() => import("./pages/Reservations"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const About = lazy(() => import("./pages/About"));
+const Help = lazy(() => import("./pages/Help"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 import ErrorBoundary from "./components/ErrorBoundary";
 import NotFound from "./pages/NotFound";
 
@@ -57,14 +61,16 @@ const AppRoutes = () => {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Initialize push notifications when user logs in
+        // Initialize push notifications when user logs in (non-blocking)
         if (event === 'SIGNED_IN' && session?.user) {
-          await pushNotificationService.initialize();
+          pushNotificationService.initialize().catch(err => {
+            console.error('Push notification init failed:', err);
+          });
         }
 
-        // Remove FCM token when user logs out
+        // Remove FCM token when user logs out (non-blocking)
         if (event === 'SIGNED_OUT') {
-          await pushNotificationService.removeFCMToken();
+          pushNotificationService.removeFCMToken().catch(() => {});
         }
       }
     );
@@ -74,9 +80,11 @@ const AppRoutes = () => {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Initialize push notifications if user is already logged in
+      // Initialize push notifications if user is already logged in (non-blocking)
       if (session?.user) {
-        await pushNotificationService.initialize();
+        pushNotificationService.initialize().catch(err => {
+          console.error('Push notification init failed:', err);
+        });
       }
     }).catch(() => {
       setLoading(false);
@@ -94,13 +102,18 @@ const AppRoutes = () => {
   }
 
   return (
-    <Routes>
-      {/* Public Routes - No Auth Required (Browsing) */}
-      <Route path="/" element={<Home />} />
-      <Route path="/opgs" element={<OPGsList />} />
-      <Route path="/opg/:id" element={<OPGProfile />} />
-      <Route path="/product/:id" element={<ProductDetails />} />
-      <Route path="/map" element={<MapView />} />
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
+      </div>
+    }>
+      <Routes>
+        {/* Public Routes - No Auth Required (Browsing) */}
+        <Route path="/" element={<Home />} />
+        <Route path="/opgs" element={<OPGsList />} />
+        <Route path="/opg/:id" element={<OPGProfile />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/map" element={<MapView />} />
 
       {/* Auth Routes - Redirect to home if logged in */}
       <Route path="/welcome" element={user ? <Navigate to="/" /> : <Welcome />} />
@@ -133,7 +146,8 @@ const AppRoutes = () => {
 
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 };
 

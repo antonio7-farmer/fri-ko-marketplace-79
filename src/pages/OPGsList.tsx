@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, MapPin, Star, Heart, X, Grid3x3, List, Sprout, Store } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 interface OPG {
   id: string;
@@ -54,8 +54,21 @@ const OPGsList = () => {
   useEffect(() => {
     const init = async () => {
       const currentUser = await checkAuth();
-      await getUserLocation(currentUser);
-      fetchOPGs();
+
+      // Set default location immediately
+      setUserLocation({ lat: 45.815, lng: 15.9819 });
+
+      // Start location and OPGs fetch in parallel
+      const locationPromise = getUserLocationAsync(currentUser);
+      fetchOPGs(); // Load OPGs immediately with default location
+
+      // Update when location arrives
+      locationPromise.then(newLocation => {
+        if (newLocation) {
+          setUserLocation(newLocation);
+          // Distance calculations will auto-update via useMemo dependencies
+        }
+      });
     };
     init();
   }, []);
@@ -70,27 +83,45 @@ const OPGsList = () => {
     return user;
   };
 
-  const getUserLocation = async (currentUser: User | null) => {
-    const getGeoPosition = () => {
-      return new Promise<{ lat: number; lng: number }>((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('Geolocation not supported'));
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          (position) => resolve({
+  const getGeoPositionWithTimeout = (timeoutMs = 10000) => {
+    return new Promise<{ lat: number; lng: number }>((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Geolocation timeout'));
+      }, timeoutMs);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          clearTimeout(timeoutId);
+          resolve({
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          }),
-          (error) => reject(error)
-        );
-      });
-    };
+          });
+        },
+        (error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        },
+        {
+          timeout: timeoutMs,
+          enableHighAccuracy: false,  // Faster on mobile
+          maximumAge: 300000  // 5-min cache
+        }
+      );
+    });
+  };
 
+  const getUserLocationAsync = async (currentUser: User | null) => {
     try {
-      const position = await getGeoPosition();
-      setUserLocation(position);
+      // 1. Try Browser Geolocation with timeout
+      const position = await getGeoPositionWithTimeout(10000);
+      return position;
     } catch (error) {
+      // 2. Try User Profile Location
       if (currentUser) {
         const { data: profile } = await supabase
           .from('profiles')
@@ -99,16 +130,15 @@ const OPGsList = () => {
           .single();
 
         if (profile?.location_lat && profile?.location_lng) {
-          setUserLocation({
+          return {
             lat: Number(profile.location_lat),
             lng: Number(profile.location_lng)
-          });
-          return;
+          };
         }
       }
 
-      // Default fallback (Zagreb)
-      setUserLocation({ lat: 45.815, lng: 15.9819 });
+      // 3. Default fallback (Zagreb)
+      return { lat: 45.815, lng: 15.9819 };
     }
   };
 
@@ -149,7 +179,7 @@ const OPGsList = () => {
     }
   };
 
-  const toggleFavorite = async (opgId: string) => {
+  const toggleFavorite = useCallback(async (opgId: string) => {
     if (!user) {
       toast.error('Morate biti prijavljeni za spremanje favorita');
       navigate('/login');
@@ -173,11 +203,26 @@ const OPGsList = () => {
       setFavorites(prev => [...prev, opgId]);
       toast.success('Dodano u favorite');
     }
-  };
+  }, [user, favorites, navigate]);
 
-  // Filter and search OPGs
+  // Pre-calculate distances once, memoize results
+  const opgsWithDistance = useMemo(() => {
+    if (!userLocation) return allOPGs;
+
+    return allOPGs.map(opg => ({
+      ...opg,
+      distance: calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        Number(opg.location_lat),
+        Number(opg.location_lng)
+      )
+    }));
+  }, [allOPGs, userLocation]); // Only recalc when location or OPGs change
+
+  // Filter pre-calculated distances
   const filteredOPGs = useMemo(() => {
-    let filtered = allOPGs;
+    let filtered = opgsWithDistance;
 
     // Search filter
     if (searchQuery) {
@@ -198,26 +243,15 @@ const OPGsList = () => {
     }
 
     // Rating filter
-    filtered = filtered.filter(opg => opg.rating >= minRating);
-
-    // Distance filter
-    if (userLocation) {
-      filtered = filtered
-        .map(opg => ({
-          ...opg,
-          distance: calculateDistance(
-            userLocation.lat,
-            userLocation.lng,
-            Number(opg.location_lat),
-            Number(opg.location_lng)
-          )
-        }))
-        .filter(opg => opg.distance <= maxDistance)
-        .sort((a, b) => a.distance - b.distance);
+    if (minRating > 0) {
+      filtered = filtered.filter(opg => (opg.rating || 0) >= minRating);
     }
 
-    return filtered;
-  }, [allOPGs, searchQuery, opgType, verifiedOnly, minRating, maxDistance, userLocation]);
+    // Distance filter
+    filtered = filtered.filter(opg => opg.distance <= maxDistance);
+
+    return filtered.sort((a, b) => a.distance - b.distance);
+  }, [opgsWithDistance, searchQuery, opgType, verifiedOnly, minRating, maxDistance]);
 
   const resetFilters = () => {
     setMaxDistance(50);
@@ -227,11 +261,13 @@ const OPGsList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white shadow-sm z-10">
-        <div className="p-4">
-          <h1 className="text-2xl font-bold text-[#1F2937] mb-4">OPG-ovi</h1>
+    <PageLayout
+      variant="standard"
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+      header={{
+        children: (
+          <div className="bg-white shadow-sm p-4">
+            <h1 className="text-2xl font-bold text-[#1F2937] mb-4">OPG-ovi</h1>
 
           {/* Search Bar */}
           <div className="relative mb-3">
@@ -253,44 +289,43 @@ const OPGsList = () => {
             )}
           </div>
 
-          {/* View Mode & Filters */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                showFilters
-                  ? 'bg-[#22C55E] text-white'
-                  : 'bg-[#F3F4F6] text-[#1F2937]'
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="font-medium">Filtriraj</span>
-            </button>
+            {/* View Mode & Filters */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  showFilters
+                    ? 'bg-[#22C55E] text-white'
+                    : 'bg-[#F3F4F6] text-[#1F2937]'
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span className="font-medium">Filtriraj</span>
+              </button>
 
-            <div className="flex bg-[#F3F4F6] rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded transition-all ${
-                  viewMode === 'list' ? 'bg-white shadow' : ''
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded transition-all ${
-                  viewMode === 'grid' ? 'bg-white shadow' : ''
-                }`}
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </button>
+              <div className="flex bg-[#F3F4F6] rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded transition-all ${
+                    viewMode === 'list' ? 'bg-white shadow' : ''
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded transition-all ${
+                    viewMode === 'grid' ? 'bg-white shadow' : ''
+                  }`}
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="border-t border-[#E5E7EB] p-4 space-y-4 bg-[#F9FAFB]">
+            {/* Filters Panel */}
+            {showFilters && (
+              <div className="border-t border-[#E5E7EB] p-4 space-y-4 bg-[#F9FAFB]">
             {/* Distance Filter */}
             <div>
               <label className="block text-sm font-medium text-[#1F2937] mb-2">
@@ -382,16 +417,18 @@ const OPGsList = () => {
             </div>
 
             {/* Reset Filters */}
-            <button
-              onClick={resetFilters}
-              className="w-full py-2 text-sm text-[#22C55E] font-medium"
-            >
-              Resetuj filtere
-            </button>
+                <button
+                  onClick={resetFilters}
+                  className="w-full py-2 text-sm text-[#22C55E] font-medium"
+                >
+                  Resetuj filtere
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
+        )
+      }}
+    >
       {/* Results Count */}
       <div className="px-4 py-3 bg-white border-b border-[#E5E7EB]">
         <p className="text-sm text-[#6B7280]">
@@ -429,6 +466,8 @@ const OPGsList = () => {
                   <img
                     src={opg.cover_url || opg.avatar_url || '/placeholder.svg'}
                     alt={opg.display_name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
 
@@ -504,9 +543,7 @@ const OPGsList = () => {
           )}
         </div>
       )}
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Share2, 
-  AlertTriangle, 
-  XCircle, 
-  Check, 
-  BadgeCheck, 
-  Star, 
-  MapPin, 
-  ChevronRight, 
-  ExternalLink, 
+import {
+  ArrowLeft,
+  Share2,
+  AlertTriangle,
+  XCircle,
+  Check,
+  BadgeCheck,
+  Star,
+  MapPin,
+  ChevronRight,
+  ExternalLink,
   MessageCircle,
   Package,
   Copy
@@ -18,6 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
+import { PageLayout } from '@/components/layout';
 
 interface Product {
   id: string;
@@ -240,23 +241,31 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 bg-transparent z-50 px-6 py-4 flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
-        >
-          <ArrowLeft size={24} className="text-[#1F2937]" />
-        </button>
-        <button
-          onClick={() => setShowShareMenu(true)}
-          className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
-        >
-          <Share2 size={24} className="text-[#1F2937]" />
-        </button>
-      </div>
-
+    <PageLayout
+      variant="transparent-header"
+      showBottomNav={false}
+      background="bg-[#E8F5E9]"
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+      header={{
+        show: true,
+        children: (
+          <div className="flex items-center justify-between px-6 py-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
+            >
+              <ArrowLeft size={24} className="text-[#1F2937]" />
+            </button>
+            <button
+              onClick={() => setShowShareMenu(true)}
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
+            >
+              <Share2 size={24} className="text-[#1F2937]" />
+            </button>
+          </div>
+        )
+      }}
+    >
       {/* Product Image */}
       <div className="relative h-96">
         <img
@@ -405,7 +414,7 @@ const ProductDetails = () => {
       )}
 
       {/* Sticky CTA Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] p-6 z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] p-6 z-40 safe-bottom">
         <button
           onClick={handleReservation}
           disabled={product.stock_status === 'out'}
@@ -546,7 +555,7 @@ const ProductDetails = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 };
 

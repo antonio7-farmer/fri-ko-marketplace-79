@@ -4,7 +4,7 @@ import { ArrowLeft, Share2, Check, BadgeCheck, Star, MapPin, Heart, Plus, Messag
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 import ProductsGrid from '@/components/ProductsGrid';
 import AboutSection from '@/components/AboutSection';
 import ReviewsSection from '@/components/ReviewsSection';
@@ -174,25 +174,34 @@ const OPGProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header Bar */}
-      <div className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm z-40 px-6 py-4 flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
-        >
-          <ArrowLeft size={24} className="text-[#1F2937]" />
-        </button>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(window.location.href);
-            toast.success('Link kopiran');
-          }}
-          className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
-        >
-          <Share2 size={24} className="text-[#1F2937]" />
-        </button>
-      </div>
+    <PageLayout
+      variant="transparent-header"
+      showBottomNav={true}
+      background="bg-[#E8F5E9]"
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+      header={{
+        show: true,
+        children: (
+          <div className="bg-white/90 backdrop-blur-sm px-6 py-4 flex items-center justify-between">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
+            >
+              <ArrowLeft size={24} className="text-[#1F2937]" />
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success('Link kopiran');
+              }}
+              className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
+            >
+              <Share2 size={24} className="text-[#1F2937]" />
+            </button>
+          </div>
+        )
+      }}
+    >
 
       {/* Hero Section */}
       <div className="relative pt-16">
@@ -356,9 +365,7 @@ const OPGProfile = () => {
           </div>
         </div>
       )}
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

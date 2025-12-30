@@ -13,7 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 // Fix Leaflet default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;

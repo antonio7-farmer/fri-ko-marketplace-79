@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 import {
   Settings, Crown, Eye, MessageCircle, Package, Plus,
   Edit2, Trash2
@@ -120,54 +120,50 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
+    <PageLayout
+      variant="standard"
+      loading={loading}
+      header={{
+        children: (
+          <div className="bg-white px-6 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl font-bold text-[#1F2937]">Moj OPG</h1>
+                <p className="text-sm text-[#6B7280]">{profile?.display_name}</p>
+              </div>
+              <button
+                onClick={() => navigate('/profile/edit')}
+                className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
+              >
+                <Settings size={24} className="text-[#6B7280]" />
+              </button>
+            </div>
 
-      {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-[#1F2937]">Moj OPG</h1>
-            <p className="text-sm text-[#6B7280]">{profile?.display_name}</p>
+            {/* Tier Badge */}
+            <div className="flex items-center gap-2">
+              {profile?.role === 'farmer' ? (
+                <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
+                  <Crown size={16} />
+                  Farmer Tier
+                </div>
+              ) : (
+                <div className="bg-[#E5E7EB] text-[#6B7280] px-4 py-2 rounded-full text-sm font-semibold">
+                  Free Tier ({products.length}/2)
+                </div>
+              )}
+              {profile?.role === 'seller' && (
+                <button className="text-[#22C55E] text-sm font-semibold hover:underline">
+                  Nadogradi →
+                </button>
+              )}
+            </div>
           </div>
-          <button
-            onClick={() => navigate('/profile/edit')}
-            className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
-          >
-            <Settings size={24} className="text-[#6B7280]" />
-          </button>
-        </div>
-
-        {/* Tier Badge */}
-        <div className="flex items-center gap-2">
-          {profile?.role === 'farmer' ? (
-            <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
-              <Crown size={16} />
-              Farmer Tier
-            </div>
-          ) : (
-            <div className="bg-[#E5E7EB] text-[#6B7280] px-4 py-2 rounded-full text-sm font-semibold">
-              Free Tier ({products.length}/2)
-            </div>
-          )}
-          {profile?.role === 'seller' && (
-            <button className="text-[#22C55E] text-sm font-semibold hover:underline">
-              Nadogradi →
-            </button>
-          )}
-        </div>
-      </div>
-
+        )
+      }}
+    >
       {/* Stats Cards */}
-      <div className="p-6 grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <button
           onClick={() => navigate('/reservations')}
           className="bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition-all text-left"
@@ -327,10 +323,7 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
-      <BottomNav />
-
-    </div>
+    </PageLayout>
   );
 };
 

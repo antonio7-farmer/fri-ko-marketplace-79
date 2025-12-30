@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, MessageCircle, Bell, Check, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 interface Notification {
   id: string;
@@ -232,10 +232,14 @@ const Notifications = () => {
     : notifications;
 
   return (
-    <div className="min-h-screen bg-[#F8FAF8] pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white border-b border-[#E5E7EB] z-10">
-        <div className="px-6 py-4">
+    <PageLayout
+      variant="standard"
+      background="bg-[#F8FAF8]"
+      loading={loading && notifications.length === 0}
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+      header={{
+        children: (
+          <div className="bg-white border-b border-[#E5E7EB] px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <button
@@ -282,8 +286,9 @@ const Notifications = () => {
             </button>
           </div>
         </div>
-      </div>
-
+        )
+      }}
+    >
       {/* Notifications List */}
       <div className="pt-6 px-6 pb-4">
         {loading ? (
@@ -359,9 +364,7 @@ const Notifications = () => {
           </div>
         )}
       </div>
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

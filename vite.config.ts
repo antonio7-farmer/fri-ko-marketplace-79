@@ -31,6 +31,9 @@ export default defineConfig(({ mode }) => ({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'supabase-vendor': ['@supabase/supabase-js'],
           'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
+          // Route-based chunks for heavy pages
+          'map': ['leaflet', 'react-leaflet'],
+          'charts': ['recharts'],
         },
       },
     },

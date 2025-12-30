@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal, Bell, Package, LogIn, Heart, Star, Crown, Apple, Carrot, Beef, Egg, Milk, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 const categories = [
   { value: 'all', label: 'Sve' },
@@ -103,12 +103,28 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const ITEMS_PER_PAGE = 20;
 
   useEffect(() => {
     const init = async () => {
       const currentUser = await checkAuth();
-      await getUserLocation(currentUser);
-      fetchData();
+
+      // Set default location immediately
+      setUserLocation({ lat: 45.815, lng: 15.9819 });
+
+      // Start location and feed in parallel
+      const locationPromise = getUserLocationAsync(currentUser);
+      fetchData(); // Load feed immediately with default location
+
+      // Update feed when location arrives
+      locationPromise.then(newLocation => {
+        if (newLocation) {
+          setUserLocation(newLocation);
+          // Feed will auto-update via useMemo dependencies
+        }
+      });
     };
     init();
   }, []);
@@ -145,27 +161,43 @@ const Home = () => {
     return user;
   };
 
-  const getUserLocation = async (currentUser: User | null) => {
-    const getGeoPosition = () => {
-      return new Promise<{ lat: number; lng: number }>((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('Geolocation not supported'));
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          (position) => resolve({
+  const getGeoPositionWithTimeout = (timeoutMs = 10000) => {
+    return new Promise<{ lat: number; lng: number }>((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Geolocation timeout'));
+      }, timeoutMs);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          clearTimeout(timeoutId);
+          resolve({
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          }),
-          (error) => reject(error)
-        );
-      });
-    };
+          });
+        },
+        (error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        },
+        {
+          timeout: timeoutMs,
+          enableHighAccuracy: false,  // Faster on mobile
+          maximumAge: 300000  // 5-min cache
+        }
+      );
+    });
+  };
 
+  const getUserLocationAsync = async (currentUser: User | null) => {
     try {
-      // 1. Try Browser Geolocation
-      const position = await getGeoPosition();
-      setUserLocation(position);
+      // 1. Try Browser Geolocation with timeout
+      const position = await getGeoPositionWithTimeout(10000);
+      return position;
     } catch (error) {
       // 2. Try User Profile Location
       if (currentUser) {
@@ -176,24 +208,23 @@ const Home = () => {
           .single();
 
         if (profile?.location_lat && profile?.location_lng) {
-          setUserLocation({
+          return {
             lat: Number(profile.location_lat),
             lng: Number(profile.location_lng)
-          });
-          return;
+          };
         }
       }
 
       // 3. Default fallback (Zagreb)
-      setUserLocation({ lat: 45.815, lng: 15.9819 });
+      return { lat: 45.815, lng: 15.9819 };
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = async (pageNum = 0, append = false) => {
     setLoading(true);
 
-    // Fetch all OPGs (farmers and sellers) with location data
-    const { data: opgs } = await supabase
+    // Fetch paginated OPGs (farmers and sellers) with location data
+    const { data: opgs, count } = await supabase
       .from('profiles')
       .select(`
         id,
@@ -214,13 +245,14 @@ const Home = () => {
           price,
           stock_status
         )
-      `)
+      `, { count: 'exact' })
       .in('role', ['seller', 'farmer'])
       .not('location_lat', 'is', null)
       .not('location_lng', 'is', null)
+      .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1)
       .order('created_at', { ascending: false });
 
-    // Fetch all products with seller info
+    // Fetch paginated products with seller info
     const { data: products } = await supabase
       .from('products')
       .select(`
@@ -244,12 +276,12 @@ const Home = () => {
           location_lat,
           location_lng
         )
-      `);
+      `)
+      .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
 
-    setAllOPGs((opgs as OPG[]) || []);
-
-    setNearbyProducts((products as Product[]) || []);
-
+    setAllOPGs(append ? [...allOPGs, ...((opgs as OPG[]) || [])] : ((opgs as OPG[]) || []));
+    setNearbyProducts(append ? [...nearbyProducts, ...((products as Product[]) || [])] : ((products as Product[]) || []));
+    setHasMore((count ?? 0) > (pageNum + 1) * ITEMS_PER_PAGE);
     setLoading(false);
   };
 
@@ -289,7 +321,7 @@ const Home = () => {
     setUnreadNotifications((messagesCount || 0) + (sellerReservationsCount || 0) + (buyerReservationsCount || 0));
   };
 
-  const toggleFavorite = async (sellerId: string) => {
+  const toggleFavorite = useCallback(async (sellerId: string) => {
     if (!user) {
       toast.error('Prijavite se za dodavanje favorita');
       localStorage.setItem('redirectAfterLogin', window.location.pathname);
@@ -312,7 +344,26 @@ const Home = () => {
       setFavorites([...favorites, sellerId]);
       toast.success('Dodano u favorite');
     }
-  };
+  }, [user, favorites, navigate]);
+
+  const handleScroll = useCallback(() => {
+    if (loading || !hasMore) return;
+
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.documentElement.scrollHeight;
+    const clientHeight = window.innerHeight;
+
+    if (scrollHeight - scrollTop - clientHeight < 300) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchData(nextPage, true);
+    }
+  }, [loading, hasMore, page]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   const filteredOPGs = useMemo(() => {
     let filtered = allOPGs;
@@ -353,19 +404,14 @@ const Home = () => {
     return filtered;
   }, [nearbyProducts, searchQuery, activeCategory]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header */}
-      <header className="sticky-header bg-white z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+    <PageLayout
+      variant="standard"
+      loading={loading}
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+      header={{
+        children: (
+          <div className="bg-white shadow-sm px-6 py-4">
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-[#22C55E]">Friško.hr</h1>
@@ -434,10 +480,11 @@ const Home = () => {
             ))}
           </div>
         </div>
-      </header>
-
+        )
+      }}
+    >
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+      <div className="px-6 py-6 space-y-6">
         {/* OPGs Horizontal Scroll */}
         {filteredOPGs.length > 0 && (
           <section>
@@ -464,6 +511,8 @@ const Home = () => {
                         <img
                           src={opg.cover_url || opg.avatar_url || '/placeholder.svg'}
                           alt={opg.display_name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -545,6 +594,8 @@ const Home = () => {
                     <img
                       src={product.image_url || '/placeholder.svg'}
                       alt={product.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -566,6 +617,8 @@ const Home = () => {
                         <img
                           src={product.seller.cover_url || product.seller.avatar_url || '/placeholder.svg'}
                           alt={product.seller.display_name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-5 h-5 rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -599,11 +652,8 @@ const Home = () => {
             </div>
           )}
         </section>
-      </main>
-
-      {/* Bottom Navigation */}
-      <BottomNav />
-    </div >
+      </div>
+    </PageLayout>
   );
 };
 

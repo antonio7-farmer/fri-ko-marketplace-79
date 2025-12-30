@@ -4,7 +4,7 @@ import { ArrowLeft, Heart, MapPin, Star, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 interface Favorite {
   id: string;
@@ -117,29 +117,33 @@ const Favorites = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white border-b z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft size={24} />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Moji favoriti</h1>
-              <p className="text-sm text-gray-600">
-                {favorites.length} {favorites.length === 1 ? 'favorit' : favorites.length < 5 ? 'favorita' : 'favorita'}
-              </p>
+    <PageLayout
+      variant="standard"
+      background="bg-gray-50"
+      loading={loading && favorites.length === 0}
+      header={{
+        children: (
+          <div className="bg-white border-b px-4 py-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft size={24} />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Moji favoriti</h1>
+                <p className="text-sm text-gray-600">
+                  {favorites.length} {favorites.length === 1 ? 'favorit' : favorites.length < 5 ? 'favorita' : 'favorita'}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
+        )
+      }}
+    >
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div>
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="animate-spin text-[#22C55E]" size={32} />
@@ -246,9 +250,7 @@ const Favorites = () => {
           </div>
         )}
       </div>
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

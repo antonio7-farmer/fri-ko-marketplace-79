@@ -50,3 +50,7 @@ setup-database.sql
 add-reservations-table.sql
 fix-storage-nested-folders.sql
 update_profiles_schema.sql
+
+# BFG and system files
+bfg.jar
+nul

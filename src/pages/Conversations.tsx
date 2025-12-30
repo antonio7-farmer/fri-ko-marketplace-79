@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageCircle, Search, ChevronRight, Check, BadgeCheck, Package } from 'lucide-react';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 interface ConversationData {
   id: string;
@@ -63,75 +63,37 @@ const Conversations = () => {
   };
 
   const fetchConversations = async (userId: string) => {
-    // Get all messages involving current user
-    const { data: messages } = await supabase
-      .from('messages')
-      .select('sender_id, receiver_id')
-      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+    // Use optimized database function - reduces 31 queries to 1
+    const { data: conversations, error } = await supabase
+      .rpc('get_user_conversations', { user_id: userId });
 
-    if (!messages || messages.length === 0) {
+    if (error) {
+      console.error('Error fetching conversations:', error);
       setLoading(false);
       return;
     }
 
-    // Get unique partner IDs
-    const partnerIds = [...new Set(
-      messages.map(m => m.sender_id === userId ? m.receiver_id : m.sender_id)
-    )].filter(Boolean) as string[];
-
-    if (partnerIds.length === 0) {
+    if (!conversations || conversations.length === 0) {
       setLoading(false);
       return;
     }
 
-    // Fetch details for each conversation
-    const conversationsData = await Promise.all(
-      partnerIds.map(async (partnerId) => {
-        // Get partner profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, display_name, avatar_url, verified')
-          .eq('id', partnerId)
-          .maybeSingle();
+    // Transform data to match expected format
+    const formattedConversations = conversations
+      .filter(conv => conv.last_message !== null)
+      .map(conv => ({
+        id: conv.partner_id,
+        other_user: {
+          id: conv.partner_id,
+          display_name: conv.display_name,
+          avatar_url: conv.avatar_url,
+          verified: conv.verified
+        },
+        last_message: conv.last_message,
+        unread_count: Number(conv.unread_count)
+      }));
 
-        if (!profile) return null;
-
-        // Get last message
-        const { data: lastMessages } = await supabase
-          .from('messages')
-          .select('*')
-          .or(`and(sender_id.eq.${userId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${userId})`)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        const lastMessage = lastMessages?.[0];
-        if (!lastMessage) return null;
-
-        // Count unread messages
-        const { count: unreadCount } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('sender_id', partnerId)
-          .eq('receiver_id', userId)
-          .eq('read', false);
-
-        return {
-          id: partnerId,
-          other_user: profile,
-          last_message: lastMessage,
-          unread_count: unreadCount || 0
-        };
-      })
-    );
-
-    // Filter out nulls and sort by last message time
-    const validConversations = conversationsData
-      .filter((c): c is ConversationData => c !== null)
-      .sort((a, b) => 
-        new Date(b.last_message.created_at).getTime() - new Date(a.last_message.created_at).getTime()
-      );
-
-    setConversations(validConversations);
+    setConversations(formattedConversations);
     setLoading(false);
   };
 
@@ -164,19 +126,24 @@ const Conversations = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white z-40 px-6 py-4 border-b border-[#E5E7EB]">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[#1F2937]">Poruke</h1>
-          <button className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all">
-            <Search size={24} className="text-[#6B7280]" />
-          </button>
-        </div>
-      </div>
-
+    <PageLayout
+      variant="standard"
+      loading={loading && conversations.length === 0}
+      header={{
+        children: (
+          <div className="bg-white px-6 py-4 border-b border-[#E5E7EB]">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-[#1F2937]">Poruke</h1>
+              <button className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all">
+                <Search size={24} className="text-[#6B7280]" />
+              </button>
+            </div>
+          </div>
+        )
+      }}
+    >
       {/* Conversations List */}
-      <div className="pt-6 p-4 space-y-2">
+      <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#22C55E]"></div>
@@ -206,6 +173,8 @@ const Conversations = () => {
                   <img
                     src={conv.other_user.avatar_url || '/placeholder.svg'}
                     alt={conv.other_user.display_name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-14 h-14 rounded-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -257,9 +226,7 @@ const Conversations = () => {
           ))
         )}
       </div>
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

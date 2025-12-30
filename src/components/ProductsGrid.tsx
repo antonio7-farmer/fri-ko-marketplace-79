@@ -40,6 +40,8 @@ const ProductsGrid = ({ products }: ProductsGridProps) => {
             <img
               src={product.image_url || '/placeholder.svg'}
               alt={product.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;

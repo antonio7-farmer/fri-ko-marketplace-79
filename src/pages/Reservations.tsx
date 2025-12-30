@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Check, X, Clock, User, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import BottomNav from '@/components/BottomNav';
+import { PageLayout } from '@/components/layout';
 
 interface Reservation {
   id: string;
@@ -188,81 +188,86 @@ const Reservations = () => {
     : reservations.filter(r => r.status === 'cancelled' || r.status === 'completed');
 
   return (
-    <div className="min-h-screen bg-[#F8FAF8] pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white border-b border-[#E5E7EB] z-10">
-        <div className="px-6 py-4">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-[#E8F5E9] rounded-full transition-colors"
-            >
-              <ArrowLeft size={24} className="text-[#1F2937]" />
-            </button>
-            <h1 className="text-2xl font-bold text-[#1F2937]">Rezervacije</h1>
-          </div>
-
-          {/* View Toggle (only for sellers/farmers) */}
-          {['seller', 'farmer'].includes(userRole || '') && (
-            <div className="flex gap-2 mb-4">
+    <PageLayout
+      variant="standard"
+      background="bg-[#F8FAF8]"
+      contentPadding={{ x: 'px-0', y: 'py-0' }}
+      header={{
+        children: (
+          <div className="bg-white border-b border-[#E5E7EB] px-6 py-4">
+            <div className="flex items-center gap-4 mb-4">
               <button
-                onClick={() => setView('incoming')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                  view === 'incoming'
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-[#E8F5E9] rounded-full transition-colors"
+              >
+                <ArrowLeft size={24} className="text-[#1F2937]" />
+              </button>
+              <h1 className="text-2xl font-bold text-[#1F2937]">Rezervacije</h1>
+            </div>
+
+            {/* View Toggle (only for sellers/farmers) */}
+            {['seller', 'farmer'].includes(userRole || '') && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setView('incoming')}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                    view === 'incoming'
+                      ? 'bg-[#22C55E] text-white'
+                      : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
+                  }`}
+                >
+                  Primljene
+                </button>
+                <button
+                  onClick={() => setView('outgoing')}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                    view === 'outgoing'
+                      ? 'bg-[#22C55E] text-white'
+                      : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
+                  }`}
+                >
+                  Poslane
+                </button>
+              </div>
+            )}
+
+            {/* Status Filter */}
+            <div className="flex gap-2 overflow-x-auto">
+              <button
+                onClick={() => setFilter('all')}
+                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  filter === 'all'
                     ? 'bg-[#22C55E] text-white'
                     : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
                 }`}
               >
-                Primljene
+                Sve ({reservations.length})
               </button>
               <button
-                onClick={() => setView('outgoing')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                  view === 'outgoing'
+                onClick={() => setFilter('active')}
+                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  filter === 'active'
                     ? 'bg-[#22C55E] text-white'
                     : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
                 }`}
               >
-                Poslane
+                Aktivne ({reservations.filter(r => r.status === 'pending' || r.status === 'confirmed').length})
+              </button>
+              <button
+                onClick={() => setFilter('past')}
+                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  filter === 'past'
+                    ? 'bg-[#22C55E] text-white'
+                    : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
+                }`}
+              >
+                Prošle ({reservations.filter(r => r.status === 'cancelled' || r.status === 'completed').length})
               </button>
             </div>
-          )}
-
-          {/* Status Filter */}
-          <div className="flex gap-2 overflow-x-auto">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-                filter === 'all'
-                  ? 'bg-[#22C55E] text-white'
-                  : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
-              }`}
-            >
-              Sve ({reservations.length})
-            </button>
-            <button
-              onClick={() => setFilter('active')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-                filter === 'active'
-                  ? 'bg-[#22C55E] text-white'
-                  : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
-              }`}
-            >
-              Aktivne ({reservations.filter(r => r.status === 'pending' || r.status === 'confirmed').length})
-            </button>
-            <button
-              onClick={() => setFilter('past')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-                filter === 'past'
-                  ? 'bg-[#22C55E] text-white'
-                  : 'bg-[#E8F5E9] text-[#6B7280] hover:bg-[#D1FAE5]'
-              }`}
-            >
-              Prošle ({reservations.filter(r => r.status === 'cancelled' || r.status === 'completed').length})
-            </button>
           </div>
-        </div>
-      </div>
+        )
+      }}
+    >
 
       {/* Reservations List */}
       <div className="pt-6 px-6 pb-4">
@@ -403,9 +408,7 @@ const Reservations = () => {
           </div>
         )}
       </div>
-
-      <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 
