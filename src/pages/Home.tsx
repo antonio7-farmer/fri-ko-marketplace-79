@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, SlidersHorizontal, Bell, Package, LogIn, Heart, Star, Crown, Apple, Carrot, Beef, Egg, Milk, MoreHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Bell, Package, LogIn, Heart, Star, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
@@ -8,6 +8,7 @@ import { PageLayout } from '@/components/layout';
 import { CATEGORIES, DEFAULT_LOCATION } from '@/lib/constants';
 import { calculateDistance, parseCoordinates } from '@/lib/geolocation';
 import { storeRedirectPath } from '@/lib/navigation';
+import { getCategoryIcon, getUniqueCategories } from '@/lib/categories';
 
 const categories = CATEGORIES;
 
@@ -47,32 +48,6 @@ interface OPG {
   location_lng: number | null;
   products: Product[];
 }
-
-// Helper function to get category icon
-const getCategoryIcon = (category: string) => {
-  const iconProps = { size: 16, className: "text-[#22C55E]" };
-  
-  switch (category) {
-    case 'voce':
-      return <Apple {...iconProps} />;
-    case 'povrce':
-      return <Carrot {...iconProps} />;
-    case 'meso':
-      return <Beef {...iconProps} />;
-    case 'jaja':
-      return <Egg {...iconProps} />;
-    case 'mlijecni':
-      return <Milk {...iconProps} />;
-    default:
-      return <MoreHorizontal {...iconProps} />;
-  }
-};
-
-// Helper function to get unique categories from products
-const getUniqueCategories = (products: Product[]): string[] => {
-  const categories = products.map(product => product.category);
-  return [...new Set(categories)];
-};
 
 const Home = () => {
   const navigate = useNavigate();

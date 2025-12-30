@@ -4,6 +4,7 @@ import { ArrowLeft, Package, MessageCircle, Bell, Check, Trash2 } from 'lucide-r
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PageLayout } from '@/components/layout';
+import { getErrorMessage } from '@/lib/errors';
 
 interface Notification {
   id: string;
@@ -233,6 +234,7 @@ const Notifications = () => {
       toast.success('Sve obavijesti označene kao pročitane');
       fetchNotifications();
     } catch (error) {
+      console.error('Error marking notifications as read:', getErrorMessage(error));
       toast.error('Greška pri ažuriranju obavijesti');
     }
   };

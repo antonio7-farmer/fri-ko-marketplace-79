@@ -7,6 +7,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import ImageUpload from '@/components/ImageUpload';
+import { getErrorMessage } from '@/lib/errors';
 
 // Fix for Leaflet default icon
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -191,7 +192,8 @@ const EditProfile = () => {
         setFarmPictures(data.farm_pictures);
       }
 
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error loading profile:', getErrorMessage(error));
       toast.error('Greška pri učitavanju profila');
     } finally {
       setLoading(false);
@@ -369,8 +371,10 @@ const EditProfile = () => {
       toast.success('Profil uspješno ažuriran!');
       navigate('/profile');
 
-    } catch (error: any) {
-      toast.error('Spremanje nije uspjelo: ' + error.message);
+    } catch (error) {
+      const errorMsg = getErrorMessage(error);
+      console.error('Error saving profile:', errorMsg);
+      toast.error('Spremanje nije uspjelo: ' + errorMsg);
     } finally {
       setSaving(false);
     }
