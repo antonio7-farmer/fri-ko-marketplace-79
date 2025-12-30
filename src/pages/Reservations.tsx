@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PageLayout } from '@/components/layout';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { getErrorMessage } from '@/lib/errors';
 
 interface Reservation {
   id: string;
@@ -118,8 +119,8 @@ const Reservations = () => {
 
       if (error) throw error;
       setReservations(data || []);
-    } catch (error: any) {
-      
+    } catch (error) {
+      console.error('Error loading reservations:', getErrorMessage(error));
       toast.error('Greška pri učitavanju rezervacija');
     } finally {
       setLoading(false);
@@ -142,8 +143,8 @@ const Reservations = () => {
       );
 
       fetchReservations();
-    } catch (error: any) {
-      
+    } catch (error) {
+      console.error('Error updating reservation:', getErrorMessage(error));
       toast.error('Greška pri ažuriranju rezervacije');
     }
   };

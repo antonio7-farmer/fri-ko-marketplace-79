@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import { storeRedirectPath } from '@/lib/navigation';
 import { PageLayout } from '@/components/layout';
+import { getErrorMessage } from '@/lib/errors';
 
 interface Product {
   id: string;
@@ -208,9 +209,10 @@ const ProductDetails = () => {
       // Navigate to chat
       navigate(`/chat/${seller.id}`);
 
-    } catch (error: any) {
-      
-      toast.error('Greška pri rezervaciji: ' + error.message);
+    } catch (error) {
+      const errorMsg = getErrorMessage(error);
+      console.error('Error creating reservation:', errorMsg);
+      toast.error('Greška pri rezervaciji: ' + errorMsg);
     } finally {
       setSubmittingReservation(false);
     }
