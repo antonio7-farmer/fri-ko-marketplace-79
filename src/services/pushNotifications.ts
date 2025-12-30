@@ -25,31 +25,67 @@ export class PushNotificationService {
     }
 
     try {
+      console.log('🔔 Initializing push notifications...');
+
+      // Create notification channel for Android FIRST (required for Android 8.0+)
+      if (Capacitor.getPlatform() === 'android') {
+        console.log('📱 Creating Android notification channel...');
+        try {
+          await PushNotifications.createChannel({
+            id: 'default',
+            name: 'Frisko Notifications',
+            description: 'Notifications for Frisko marketplace',
+            importance: 4, // Default importance (should show notification)
+            visibility: 1, // Public
+            sound: 'default',
+            vibration: true,
+            lights: true,
+          });
+          console.log('✅ Android notification channel created successfully');
+        } catch (channelError) {
+          console.error('❌ Failed to create notification channel:', channelError);
+          // Continue anyway - channel might already exist
+        }
+      }
+
+      console.log('🔔 Requesting push notification permissions...');
+
       // Request permission to use push notifications
       const permStatus = await PushNotifications.requestPermissions();
+      console.log('🔔 Permission status:', permStatus);
 
       if (permStatus.receive === 'granted') {
+        console.log('✅ Permission granted, registering with FCM...');
+
         // Register with FCM
         await PushNotifications.register();
+        console.log('✅ Registration called');
 
         // Set up listeners
         this.setupListeners();
 
         this.isInitialized = true;
+
+        console.log('✅ Push notifications initialized successfully');
+      } else {
+        console.warn('⚠️ Permission not granted:', permStatus.receive);
       }
     } catch (error) {
-      // Silently fail - push notifications are optional
+      console.error('❌ Push notification initialization error:', error);
+      toast.error('Greška pri inicijalizaciji notifikacija: ' + (error as Error).message);
     }
   }
 
   private setupListeners() {
     // Handle successful registration
     PushNotifications.addListener('registration', async (token: Token) => {
+      console.log('✅ FCM token received:', token.value.substring(0, 50) + '...');
       await this.saveFCMToken(token.value);
     });
 
     // Handle registration errors
-    PushNotifications.addListener('registrationError', () => {
+    PushNotifications.addListener('registrationError', (error) => {
+      console.error('❌ Registration error:', error);
       toast.error('Greška pri registraciji notifikacija');
     });
 
@@ -57,11 +93,20 @@ export class PushNotificationService {
     PushNotifications.addListener(
       'pushNotificationReceived',
       (notification: PushNotificationSchema) => {
+        console.log('📨 PUSH NOTIFICATION RECEIVED:', {
+          title: notification.title,
+          body: notification.body,
+          data: notification.data,
+          id: notification.id,
+        });
+        
         // Show toast when app is in foreground
         toast.info(notification.title || 'Nova obavijest', {
           description: notification.body,
           duration: 5000,
         });
+        
+        console.log('✅ Toast notification shown to user');
       }
     );
 
@@ -69,6 +114,15 @@ export class PushNotificationService {
     PushNotifications.addListener(
       'pushNotificationActionPerformed',
       (notification: ActionPerformed) => {
+        console.log('👆 NOTIFICATION TAPPED:', {
+          actionId: notification.actionId,
+          notification: {
+            title: notification.notification.title,
+            body: notification.notification.body,
+            data: notification.notification.data,
+          }
+        });
+        
         // You can handle navigation here based on notification data
         const data = notification.notification.data;
         if (data?.route) {
@@ -81,14 +135,17 @@ export class PushNotificationService {
 
   private async saveFCMToken(token: string) {
     try {
+      console.log('💾 Saving FCM token to database...');
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
+        console.warn('⚠️ No user found, cannot save FCM token');
         return;
       }
 
       // Get device info
       const deviceId = await this.getDeviceId();
+      console.log('📱 Device ID:', deviceId);
 
       // Upsert token (insert or update if exists)
       const { error } = await supabase
@@ -104,10 +161,15 @@ export class PushNotificationService {
         });
 
       if (error) {
+        console.error('❌ Error saving FCM token:', error);
         throw error;
       }
+
+      console.log('✅ FCM token saved successfully to database');
+      toast.success('Notifikacije omogućene');
     } catch (error) {
-      // Silently fail
+      console.error('❌ Failed to save FCM token:', error);
+      toast.error('Greška pri spremanju FCM tokena');
     }
   }
 

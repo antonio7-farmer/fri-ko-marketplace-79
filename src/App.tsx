@@ -55,17 +55,23 @@ const AppRoutes = () => {
   useAndroidBackButton();
 
   useEffect(() => {
-    // Set up auth state listener first
+    console.log('🚀 APP STARTING - initializing push notifications...');
+    // Initialize push notifications immediately (channel creation and basic setup)
+    pushNotificationService.initialize().catch(err => {
+      console.error('Push notification init failed:', err);
+    });
+
+    console.log('🔐 SETTING UP AUTH LISTENER...');
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔐 AUTH STATE CHANGE:', event, 'User:', session?.user?.email, 'Session exists:', !!session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Initialize push notifications when user logs in (non-blocking)
+        // Handle FCM token management based on auth state
         if (event === 'SIGNED_IN' && session?.user) {
-          pushNotificationService.initialize().catch(err => {
-            console.error('Push notification init failed:', err);
-          });
+          console.log('✅ User signed in, FCM token will be saved on registration');
         }
 
         // Remove FCM token when user logs out (non-blocking)
@@ -75,18 +81,20 @@ const AppRoutes = () => {
       }
     );
 
-    // Then check for existing session
+    console.log('🔍 CHECKING EXISTING SESSION...');
+    // Check for existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('🔍 SESSION CHECK RESULT:', 'User:', session?.user?.email, 'Session exists:', !!session);
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Initialize push notifications if user is already logged in (non-blocking)
       if (session?.user) {
-        pushNotificationService.initialize().catch(err => {
-          console.error('Push notification init failed:', err);
-        });
+        console.log('✅ User already logged in, FCM token will be saved on registration');
+      } else {
+        console.log('❌ NO EXISTING SESSION - user not logged in');
       }
-    }).catch(() => {
+    }).catch((error) => {
+      console.log('❌ SESSION CHECK ERROR:', error);
       setLoading(false);
     });
 
