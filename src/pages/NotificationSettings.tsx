@@ -4,6 +4,8 @@ import { ArrowLeft, Bell, MessageSquare, Package, Mail, Loader2 } from 'lucide-r
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 interface NotificationPreferences {
   reservations: boolean;
@@ -107,31 +109,31 @@ const NotificationSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white border-b z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <button
+    <PageLayout
+      preset="settings"
+      loading={loading}
+      header={{
+        show: true,
+        className: 'border-b',
+        children: (
+          <div className="px-4 py-4">
+            <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
           >
-            <ArrowLeft size={20} />
-            <span>Natrag</span>
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Postavke obavijesti</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Upravljajte kako želite primati obavijesti
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-[#22C55E]" size={32} />
+              <ArrowLeft size={20} />
+              <span>Natrag</span>
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">Postavke obavijesti</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Upravljajte kako želite primati obavijesti
+            </p>
           </div>
-        ) : (
-          <div className="space-y-4">
+        ),
+      }}
+    >
+      <div className="max-w-4xl mx-auto">
+        <div className="space-y-4">
             {/* Reservations */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-start justify-between gap-4">
@@ -246,10 +248,9 @@ const NotificationSettings = () => {
                 <strong>Napomena:</strong> Važne obavijesti vezane uz sigurnost računa i transakcije bit će poslane bez obzira na ove postavke.
               </p>
             </div>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

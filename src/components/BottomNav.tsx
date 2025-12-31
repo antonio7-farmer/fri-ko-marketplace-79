@@ -83,7 +83,7 @@ const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] z-50 max-w-[480px] mx-auto safe-bottom">
-      <div className="px-6 py-3">
+      <div className="px-6 pt-2 pb-2">
         <div className="flex items-center justify-around">
           {/* Home - Always accessible */}
           <button

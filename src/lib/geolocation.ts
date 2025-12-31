@@ -39,7 +39,7 @@ export const calculateDistance = (
  * @param lng - Longitude to validate
  * @returns true if both are valid numbers
  */
-export const isValidCoordinates = (lat: unknown, lng: unknown): lat is number & lng is number => {
+export const isValidCoordinates = (lat: unknown, lng: unknown): boolean => {
   return (
     typeof lat === 'number' &&
     typeof lng === 'number' &&

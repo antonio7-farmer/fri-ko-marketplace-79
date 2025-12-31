@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { Leaf } from 'lucide-react';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 const Welcome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] flex flex-col items-center justify-center p-6">
+    <PageLayout preset="auth" header={{ show: false }}>
+      <div className={`${classNames.flex.colCenter} h-full`}>
       {/* Logo/Icon */}
       <div className="w-24 h-24 bg-[#22C55E] rounded-full flex items-center justify-center mb-8 shadow-lg">
         <Leaf className="w-12 h-12 text-white" />
@@ -32,7 +35,8 @@ const Welcome = () => {
           Registriraj se
         </button>
       </div>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

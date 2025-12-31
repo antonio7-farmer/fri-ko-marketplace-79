@@ -1,25 +1,32 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, ShoppingBag, MessageCircle, Sprout, Heart, Shield } from 'lucide-react';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 const About = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white border-b z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={20} />
-            <span>Natrag</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <PageLayout
+      preset="standard"
+      background="bg-gray-50"
+      header={{
+        show: true,
+        className: 'border-b',
+        children: (
+          <div className="px-4 py-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft size={20} />
+              <span>Natrag</span>
+            </button>
+          </div>
+        ),
+      }}
+    >
+      <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-[#22C55E] rounded-full mb-4">
@@ -162,7 +169,7 @@ const About = () => {
           <p className="mt-1">© 2025 Frisko.hr. Sva prava pridržana.</p>
         </section>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

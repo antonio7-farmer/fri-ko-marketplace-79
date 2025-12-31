@@ -4,6 +4,8 @@ import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { consumeRedirectPath } from '@/lib/navigation';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] p-6">
+    <PageLayout preset="auth" background="bg-[#F3F4F6]" header={{ show: false }}>
       {/* Back Button */}
       <button
         onClick={() => navigate('/')}
@@ -47,7 +49,7 @@ const Login = () => {
       </button>
 
       {/* Card */}
-      <div className="bg-white rounded-2xl shadow-lg p-8">
+      <div className={`${classNames.card} shadow-lg p-8`}>
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#1F2937] mb-2">Dobrodošli natrag</h1>
@@ -133,7 +135,7 @@ const Login = () => {
           </button>
         </p>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

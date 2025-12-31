@@ -1,24 +1,31 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { PageLayout } from '@/components/layout';
 
 const Privacy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="sticky-header bg-white border-b z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={20} />
-            <span>Natrag</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <PageLayout
+      preset="standard"
+      background="bg-gray-50"
+      header={{
+        show: true,
+        className: 'border-b',
+        children: (
+          <div className="px-4 py-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft size={20} />
+              <span>Natrag</span>
+            </button>
+          </div>
+        ),
+      }}
+    >
+      <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Politika privatnosti</h1>
         <p className="text-sm text-gray-600 mb-8">Zadnja izmjena: {new Date().toLocaleDateString('hr-HR')}</p>
 
@@ -149,7 +156,7 @@ const Privacy = () => {
           </section>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

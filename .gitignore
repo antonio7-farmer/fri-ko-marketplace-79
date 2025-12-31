@@ -40,6 +40,8 @@ firebase-service-account.json
 # Service account keys
 serviceAccountKey.json
 service-account-key.json
+service-account.json
+supabase/functions/*/service-account.json
 
 # Developer tools
 *.exe

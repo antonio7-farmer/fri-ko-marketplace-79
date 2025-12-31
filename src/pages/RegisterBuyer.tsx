@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 const RegisterBuyer = () => {
   const navigate = useNavigate();
@@ -80,7 +82,7 @@ const RegisterBuyer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] p-6">
+    <PageLayout preset="form" background="bg-[#F3F4F6]" header={{ show: false }}>
       {/* Back Button */}
       <button
         onClick={() => navigate('/register')}
@@ -91,7 +93,7 @@ const RegisterBuyer = () => {
       </button>
 
       {/* Card */}
-      <div className="bg-white rounded-2xl shadow-lg p-8">
+      <div className={`${classNames.card} shadow-lg p-8`}>
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#1F2937] mb-2">Registracija kupca</h1>
@@ -239,7 +241,7 @@ const RegisterBuyer = () => {
           </button>
         </p>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, Mail, MessageCircle } from 'lucide-react';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 interface FAQItem {
   question: string;
@@ -141,22 +143,27 @@ const Help = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="sticky-header bg-white border-b z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <button
+    <PageLayout
+      preset="standard"
+      background="bg-gray-50"
+      header={{
+        show: true,
+        className: 'border-b',
+        children: (
+          <div className="px-4 py-4">
+            <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
           >
-            <ArrowLeft size={20} />
-            <span>Natrag</span>
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Pomoć i podrška</h1>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-8">
+              <ArrowLeft size={20} />
+              <span>Natrag</span>
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">Pomoć i podrška</h1>
+          </div>
+        ),
+      }}
+    >
+      <div className="max-w-4xl mx-auto">
         {/* Contact Support */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 mb-6 text-white">
           <h2 className="text-xl font-bold mb-2">Trebate dodatnu pomoć?</h2>
@@ -252,7 +259,7 @@ const Help = () => {
           </a>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

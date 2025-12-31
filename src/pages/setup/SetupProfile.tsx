@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Camera, Upload, User, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 const SetupProfile = () => {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -106,7 +108,7 @@ const SetupProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] p-6">
+    <PageLayout preset="form" header={{ show: false }}>
       <div className="max-w-2xl mx-auto">
         
         {/* Header */}
@@ -261,7 +263,7 @@ const SetupProfile = () => {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

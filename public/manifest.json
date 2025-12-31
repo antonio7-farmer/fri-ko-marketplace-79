@@ -1,0 +1,24 @@
+{
+  "name": "Friško.hr - Svježe s polja",
+  "short_name": "Friško.hr",
+  "description": "Hrvatski farm-to-table marketplace - Kupujte svježe proizvode direktno od lokalnih OPG-ova",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7FB539",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

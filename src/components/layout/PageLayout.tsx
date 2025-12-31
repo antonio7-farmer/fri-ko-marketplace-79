@@ -1,9 +1,16 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import BottomNav from '@/components/BottomNav';
+import { layoutPresets, spacing, safeArea, colors } from '@/lib/theme';
+import { useStatusBar } from '@/hooks/useStatusBar';
+
+type LayoutPreset = keyof typeof layoutPresets;
 
 interface PageLayoutProps {
-  // Layout variants
+  // Quick preset (recommended approach)
+  preset?: LayoutPreset;
+
+  // Layout variants (can override preset)
   variant?: 'standard' | 'transparent-header' | 'full-screen' | 'custom-header';
 
   // Header configuration
@@ -13,13 +20,13 @@ interface PageLayoutProps {
     children?: React.ReactNode;
   };
 
-  // Bottom navigation
+  // Bottom navigation (can override preset)
   showBottomNav?: boolean;
 
-  // Background color (Tailwind class)
+  // Background color (Tailwind class) (can override preset)
   background?: string;
 
-  // Content padding
+  // Content padding (can override preset)
   contentPadding?: {
     x?: string;
     y?: string;
@@ -37,39 +44,56 @@ interface PageLayoutProps {
 }
 
 export const PageLayout: React.FC<PageLayoutProps> = ({
-  variant = 'standard',
+  preset,
+  variant,
   header = { show: true },
-  showBottomNav = true,
-  background = 'bg-[#E8F5E9]',
-  contentPadding = { x: 'px-6', y: 'py-6' },
+  showBottomNav,
+  background,
+  contentPadding,
   loading = false,
   children,
   className,
   contentClassName
 }) => {
+  // Apply preset defaults, then allow prop overrides
+  const presetConfig = preset ? layoutPresets[preset] : null;
+
+  const finalVariant = variant ?? presetConfig?.variant ?? 'standard';
+  const finalShowBottomNav = showBottomNav ?? presetConfig?.showBottomNav ?? true;
+  const finalBackground = background ?? presetConfig?.background ?? 'bg-[#E8F5E9]';
+  const finalContentPadding = contentPadding ?? presetConfig?.contentPadding ?? { x: spacing.page.x, y: spacing.page.y };
+
   const { show: showHeader = true, className: headerClassName, children: headerChildren } = header;
+
+  // Configure status bar based on variant
+  useStatusBar({
+    backgroundColor: finalVariant === 'transparent-header' ? '#00000000' : '#FFFFFF',
+    style: 'DARK',
+    overlay: true,
+  });
 
   // Container classes
   const containerClasses = cn(
     'min-h-screen',
-    background,
-    showBottomNav && 'pb-bottom-nav', // Dynamic bottom padding with safe area
-    variant === 'full-screen' && 'h-screen flex flex-col',
+    finalBackground,
+    finalShowBottomNav && safeArea.bottomNav, // Dynamic bottom padding with safe area
+    finalVariant === 'full-screen' && 'h-screen flex flex-col',
     className
   );
 
   // Content classes
   const contentClasses = cn(
-    contentPadding.x,
-    contentPadding.y,
+    finalContentPadding.x,
+    finalContentPadding.y,
+    finalVariant === 'full-screen' && 'flex-1 overflow-y-auto',
     contentClassName
   );
 
   // Loading spinner
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
+      <div className={cn('min-h-screen flex items-center justify-center', finalBackground)}>
+        <div className={cn('animate-spin rounded-full h-12 w-12 border-b-2', `border-[${colors.primary}]`)}></div>
       </div>
     );
   }
@@ -77,22 +101,28 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   return (
     <div className={containerClasses}>
       {/* Header */}
-      {showHeader && variant === 'standard' && (
+      {showHeader && finalVariant === 'standard' && (
         <header className={cn('sticky-header bg-white', headerClassName)}>
           {headerChildren}
         </header>
       )}
 
-      {showHeader && variant === 'transparent-header' && (
+      {showHeader && finalVariant === 'transparent-header' && (
         <header className={cn('fixed-header-transparent', headerClassName)}>
           {headerChildren}
         </header>
       )}
 
-      {showHeader && variant === 'custom-header' && (
-        <div className={cn('safe-top', headerClassName)}>
+      {showHeader && finalVariant === 'custom-header' && (
+        <header className={cn('bg-white', safeArea.top, headerClassName)}>
           {headerChildren}
-        </div>
+        </header>
+      )}
+
+      {showHeader && finalVariant === 'full-screen' && (
+        <header className={cn('bg-white flex-shrink-0', safeArea.top, headerClassName)}>
+          {headerChildren}
+        </header>
       )}
 
       {/* Main Content */}
@@ -101,7 +131,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       </main>
 
       {/* Bottom Navigation */}
-      {showBottomNav && <BottomNav />}
+      {finalShowBottomNav && <BottomNav />}
     </div>
   );
 };

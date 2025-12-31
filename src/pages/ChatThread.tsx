@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, MoreVertical, Send, MessageCircle, BadgeCheck, Check, CheckCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLayout } from '@/components/layout';
 
 interface Message {
   id: string;
@@ -223,18 +224,14 @@ const ChatThread = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#E8F5E9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22C55E]"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#E8F5E9]">
-      {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
+    <PageLayout
+      preset="chat"
+      loading={loading}
+      header={{
+        show: true,
+        children: (
+      <div className="bg-white border-b border-[#E5E7EB] safe-x py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1">
           <button
             onClick={() => navigate('/messages')}
@@ -272,10 +269,12 @@ const ChatThread = () => {
           <MoreVertical size={24} className="text-[#6B7280]" />
         </button>
       </div>
-
+        ),
+      }}
+    >
       {/* Product Context Banner */}
       {productContext && (
-        <div className="bg-white border-b border-[#E5E7EB] px-4 py-3">
+        <div className="bg-white border-b border-[#E5E7EB] safe-x py-3">
           <div className="flex items-center gap-3">
             <img
               src={productContext.image_url || '/placeholder.svg'}
@@ -301,7 +300,7 @@ const ChatThread = () => {
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto safe-x pb-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -364,7 +363,7 @@ const ChatThread = () => {
       </div>
 
       {/* Message Input */}
-      <div className="bg-white border-t border-[#E5E7EB] p-4">
+      <div className="bg-white border-t border-[#E5E7EB] safe-x pt-4 pb-6 safe-bottom">
         <form onSubmit={handleSendMessage} className="flex items-end gap-2">
           <textarea
             value={newMessage}
@@ -388,7 +387,7 @@ const ChatThread = () => {
           </button>
         </form>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

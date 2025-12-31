@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 const ChangePassword = () => {
   const navigate = useNavigate();
@@ -47,21 +49,25 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] pb-20">
-      {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
-        <button
-          onClick={() => navigate('/profile')}
-          className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
-        >
-          <ArrowLeft size={24} className="text-[#1F2937]" />
-        </button>
-        <h1 className="text-xl font-bold text-[#1F2937]">Promijeni lozinku</h1>
-        <div className="w-10" />
-      </div>
-
-      {/* Form */}
-      <div className="p-6">
+    <PageLayout
+      preset="form"
+      header={{
+        show: true,
+        className: 'border-b border-[#E5E7EB]',
+        children: (
+          <div className="px-6 py-4 flex items-center justify-between">
+            <button
+              onClick={() => navigate('/profile')}
+              className="p-2 hover:bg-[#E8F5E9] rounded-lg transition-all"
+            >
+              <ArrowLeft size={24} className="text-[#1F2937]" />
+            </button>
+            <h1 className="text-xl font-bold text-[#1F2937]">Promijeni lozinku</h1>
+            <div className="w-10" />
+          </div>
+        ),
+      }}
+    >
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
             {/* New Password */}
@@ -126,8 +132,7 @@ const ChangePassword = () => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </PageLayout>
   );
 };
 

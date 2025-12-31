@@ -29,7 +29,8 @@ html, body {
 .sticky-header {
   position: sticky;
   top: 0;
-  padding-top: env(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(env(safe-area-inset-top), 24px);
   z-index: 40;
 }
 
@@ -41,7 +42,8 @@ html, body {
   right: 0;
   max-width: 480px;
   margin: 0 auto;
-  padding-top: env(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(env(safe-area-inset-top), 24px);
   z-index: 50;
 }
 
@@ -160,33 +162,44 @@ html, body {
   }
 
   /* Safe Area Utilities */
-  /* Individual safe areas */
+  /* Individual safe areas with fallback for Android */
   .safe-top {
-    padding-top: env(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-top: max(env(safe-area-inset-top), 24px);
   }
 
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
   }
 
   .safe-left {
-    padding-left: env(safe-area-inset-left);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-left: max(env(safe-area-inset-left), 16px);
   }
 
   .safe-right {
-    padding-right: env(safe-area-inset-right);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-right: max(env(safe-area-inset-right), 16px);
+  }
+
+  .safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-left: max(env(safe-area-inset-left), 16px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-right: max(env(safe-area-inset-right), 16px);
   }
 
   /* Combined safe areas */
   .safe-area-inset {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top, 24px);
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Dynamic bottom nav spacing - 80px nav height + safe area */
+  /* Dynamic bottom nav spacing - 72px nav height + safe area */
   .pb-bottom-nav {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px));
   }
 }

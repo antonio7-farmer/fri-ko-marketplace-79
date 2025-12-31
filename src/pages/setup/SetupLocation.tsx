@@ -6,6 +6,8 @@ import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { initializeLeafletIcons } from '@/lib/leaflet';
+import { PageLayout } from '@/components/layout';
+import { classNames } from '@/lib/theme';
 
 // Initialize Leaflet icons
 initializeLeafletIcons();
@@ -140,8 +142,8 @@ const SetupLocation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8F5E9] p-6">
-      <div className="max-w-4xl mx-auto">
+    <PageLayout preset="fullScreen" header={{ show: false }}>
+      <div className="max-w-4xl mx-auto h-full flex flex-col p-6">
         
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
@@ -227,7 +229,7 @@ const SetupLocation = () => {
           </button>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
